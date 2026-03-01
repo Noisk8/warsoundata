@@ -1,59 +1,65 @@
-# IranUsaBallistics
+# 📡 Tactical Ballistic Radar 
+> **A real-time audiovisual sonification and visualization of simulated geopolitical ballistic events.**
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+This project is a Single Page Application (SPA) built with Angular that simulates a dystopian/cyberpunk tactical radar. It generates, visualizes, and sonifies simulated military events (Ballistic Missiles, Drone Swarms, Cyber Attacks) between the United States and the Islamic Republic of Iran using purely browser-based rendering and audio synthesis.
 
-## Development server
+## ✨ Features
 
-To start a local development server, run:
+- **🗺️ Interactive Professional Map (Leaflet)**: Uses CartoDB's Dark Matter geographical layers to represent the globe with high-contrast tactical aesthetics.
+- **🚀 Real-Time Trajectory Engine**: Computes realistic geographical arcs between military bases in the Middle East and surrounding areas.
+- **🎵 Generative Sonification Engine (Tone.js)**: 
+  - Zero pre-recorded audio files. 100% synthesized in the browser.
+  - **Ambient Drone**: A continuous 65Hz FMSynth background drone that modulates based on attack intensity.
+  - **TR-808 Inspired Kits**: Launches trigger math-modeled 808 Kicks (USA) and 808 Snares (Iran).
+  - **Impact Acoustics**: Impacts trigger heavy Reverb and Delay layered MetalSynths (Crash sounds).
+- **💻 Cyber-Terminal UI**: A right-side floating panel designed with Glassmorphism and Monospace fonts, acting as a live `.log` readout detailing origins, routes, and data sources.
+- **⚡ Reactive Architecture (RxJS)**: All data events are simulated and streamed asynchronously using Angular Services.
 
+## 🛠️ Technology Stack
+- **Framework**: Angular v19 (SPA Mode - No SSR)
+- **Mapping**: Leaflet.js (`@asymmetrik/ngx-leaflet`)
+- **Web Audio**: Tone.js (Web Audio API wrapper)
+- **Styling**: SCSS (CSS Grid, Flexbox, Glassmorphism, CSS Animations)
+- **Deployment**: Configured out-of-the-box for Netlify via `netlify.toml`
+
+## 🚀 Quick Start (Local Development)
+
+### Prerequisites
+- Node.js (v18 or higher recommended)
+- npm
+
+### Installation
+
+1. Clone the repository:
 ```bash
-ng serve
+git clone https://github.com/Noisk8/warsoundata.git
+cd warsoundata
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+2. Install dependencies:
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
+3. Start the Angular Development Server:
 ```bash
-ng generate --help
+npm run start
 ```
 
-## Building
+4. Open your browser and navigate to `http://localhost:4200/`.
+> **Note:** Browsers block audio from playing automatically without user interaction. You must click the **[ INITIALIZE ]** button on the screen to start the simulation and hear the Tone.js context.
 
-To build the project run:
+## ☁️ Deployment (Netlify)
+This repository includes a `netlify.toml` file optimized for deploying modern Angular Single Page Applications.
 
-```bash
-ng build
-```
+1. Connect this repository to your Netlify account.
+2. Netlify will automatically detect the build settings:
+   - **Build Command:** `npm run build`
+   - **Publish Directory:** `dist/iran-usa-ballistics/browser`
+3. Hit Deploy. The `netlify.toml` includes fallback redirects (`/* /index.html 200`) to ensure Angular's routing works flawlessly in a serverless environment.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 🤝 Contributing
+This is an open-source experimental piece of net-art/data-visualization. Pull requests addressing UI improvements, new audio synthesis models, or real-time data API integrations (like GDELT or SIPRI) are highly encouraged!
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 📜 License
+MIT License. Created by Noisk8.
