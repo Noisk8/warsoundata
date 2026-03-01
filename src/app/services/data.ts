@@ -56,18 +56,6 @@ export class Data {
     const type = this.attackTypes[Math.floor(Math.random() * this.attackTypes.length)];
     const source = this.sources[Math.floor(Math.random() * this.sources.length)];
 
-    // Map sources to dummy URLs for realism
-    const urlMap: { [key: string]: string } = {
-      'Defense Feed': 'https://www.defense.gov/News/',
-      'NewsAPI': 'https://newsapi.org/',
-      'Twitter API': 'https://x.com/search?q=missile+strike',
-      'Satellite Intel': 'https://www.maxar.com/',
-      'Ground Units': 'https://www.aljazeera.com/',
-      'SIPRI DB': 'https://www.sipri.org/databases',
-      'GDELT': 'https://www.gdeltproject.org/'
-    };
-    const sourceUrl = urlMap[source] || 'https://example.com';
-
     let originCoords: [number, number];
     let t;
 
@@ -79,6 +67,37 @@ export class Data {
       // IRN attacks from inside Iran (East of targets)
       originCoords = [32.0 + (Math.random() * 4), 52.0 + (Math.random() * 8)];
       t = this.irnTargets[Math.floor(Math.random() * this.irnTargets.length)];
+    }
+
+    // Generate dynamic exact-match URLs for realism based on the event context
+    const eventId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const dateStr = new Date().toISOString().split('T')[0];
+    const encodedTarget = encodeURIComponent(t.name);
+    const encodedType = encodeURIComponent(type);
+
+    let sourceUrl = 'https://example.com';
+    switch (source) {
+      case 'Defense Feed':
+        sourceUrl = `https://www.defense.gov/News/Releases/Release/Article/${eventId}/`;
+        break;
+      case 'NewsAPI':
+        sourceUrl = `https://newsapi.org/v2/everything?q=${encodedTarget}+${encodedType}&from=${dateStr}`;
+        break;
+      case 'Twitter API':
+        sourceUrl = `https://x.com/search?q=${encodedTarget}+${encodedType}&f=live`;
+        break;
+      case 'Satellite Intel':
+        sourceUrl = `https://zoom.earth/#view=${originCoords[0].toFixed(4)},${originCoords[1].toFixed(4)},10z`;
+        break;
+      case 'Ground Units':
+        sourceUrl = `https://www.aljazeera.com/search/${encodedTarget}`;
+        break;
+      case 'SIPRI DB':
+        sourceUrl = `https://www.sipri.org/search?keys=${encodedType}+${dateStr}`;
+        break;
+      case 'GDELT':
+        sourceUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodedTarget}&mode=artlist`;
+        break;
     }
 
     this.eventsSubject.next({
