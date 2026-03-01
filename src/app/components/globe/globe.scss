@@ -198,3 +198,52 @@
   margin: 0 0.5rem;
   font-weight: bold;
 }
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+  .hud {
+    padding: 1.5rem;
+    width: 90%;
+  }
+
+  .hud h1 {
+    font-size: 1.5rem;
+  }
+
+  .terminal-panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    max-height: 40vh;
+    border-left: none;
+    border-top: 2px solid #00ffcc;
+    padding: 0.5rem;
+    box-sizing: border-box;
+  }
+
+  .terminal-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .terminal-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .terminal-panel li {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .route {
+    font-size: 0.7rem;
+  }
+}
