@@ -17,7 +17,9 @@ export class Globe implements AfterViewInit, OnDestroy {
 
   public started = false;
   private sub?: Subscription;
+  private costSub?: Subscription;
   public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string, sourceUrl: string, emoji: string }[] = [];
+  public currentCost: number = 0;
 
   private map!: L.Map;
   private attackLayer!: L.LayerGroup;
@@ -44,10 +46,15 @@ export class Globe implements AfterViewInit, OnDestroy {
           target: event.target,
           source: event.source,
           sourceUrl: event.sourceUrl,
-          emoji: event.emoji
+          emoji: event.emoji || '🚀'
         }, ...this.eventLogs];
 
         if (this.eventLogs.length > 50) this.eventLogs.pop();
+        this.cdr.detectChanges();
+      });
+
+      this.costSub = this.data.cost$.subscribe(cost => {
+        this.currentCost = cost;
         this.cdr.detectChanges();
       });
     }, 100);
@@ -63,6 +70,9 @@ export class Globe implements AfterViewInit, OnDestroy {
     }
     if (this.sub) {
       this.sub.unsubscribe();
+    }
+    if (this.costSub) {
+      this.costSub.unsubscribe();
     }
     this.data.stopSimulation();
   }

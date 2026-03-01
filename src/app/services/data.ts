@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { Subject, BehaviorSubject, Observable } from 'rxjs';
 
 export interface AttackEvent {
   attacker: 'USA' | 'IRN';
@@ -20,7 +20,10 @@ export interface AttackEvent {
 })
 export class Data {
   private eventsSubject = new Subject<AttackEvent>();
+  private costSubject = new BehaviorSubject<number>(0);
   private intervalId: any;
+  private costIntervalId: any;
+  private currentCost = 0;
 
   private attackTypes = ['BALLISTIC MISSILE', 'DRONE SWARM', 'CRUISE MISSILE', 'CYBER ATTACK', 'ARTILLERY'];
 
@@ -42,8 +45,27 @@ export class Data {
     return this.eventsSubject.asObservable();
   }
 
+  get cost$(): Observable<number> {
+    return this.costSubject.asObservable();
+  }
+
   startSimulation() {
     if (this.intervalId) return;
+
+    // Calculate baseline cost since yesterday
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const secondsSinceYesterday = (new Date().getTime() - yesterday.getTime()) / 1000;
+
+    // Assume $5,000 per second in passive military deployment costs globally
+    this.currentCost = secondsSinceYesterday * 5000;
+    this.costSubject.next(this.currentCost);
+
+    // Fast interval for visual ticking of passive costs
+    this.costIntervalId = setInterval(() => {
+      this.currentCost += (5000 / 10); // add 1/10th of per-second cost every 100ms
+      this.costSubject.next(this.currentCost);
+    }, 100);
 
     this.emitEvent(); // Emit immediately upon start
 
@@ -117,6 +139,16 @@ export class Data {
     const velocity = parseFloat((1.5 + (Math.random() * 8.0)).toFixed(1)); // MACH 1.5 to 9.5
     const payload = Math.floor(200 + (Math.random() * 2000)); // 200kg to 2200kg
 
+    // Calculate explicit weapon cost to add to the counter
+    const weaponCosts: { [key: string]: number } = {
+      'BALLISTIC MISSILE': 18000000,
+      'CRUISE MISSILE': 2500000,
+      'DRONE SWARM': 450000,
+      'CYBER ATTACK': 120000,
+      'ARTILLERY': 50000
+    };
+    this.currentCost += weaponCosts[type] || 100000;
+
     this.eventsSubject.next({
       attacker,
       intensity,
@@ -136,6 +168,10 @@ export class Data {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
+    }
+    if (this.costIntervalId) {
+      clearInterval(this.costIntervalId);
+      this.costIntervalId = null;
     }
   }
 }

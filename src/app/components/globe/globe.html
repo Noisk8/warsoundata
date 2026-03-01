@@ -16,6 +16,12 @@
         <span class="blinking-cursor">_</span>
         <h3>SYS.LOG // LIVE_INCIDENTS</h3>
     </div>
+
+    <div class="cost-tracker">
+        <div class="cost-title">EST WAR COST (USD)</div>
+        <div class="cost-description">Since 24hrs ago + Material Loss</div>
+        <div class="cost-value">{{ currentCost | currency:'USD':'symbol':'1.0-0' }}</div>
+    </div>
     <ul>
         @for (log of eventLogs; track $index) {
         <li [class.usa]="log.attacker === 'USA'" [class.irn]="log.attacker === 'IRN'">
