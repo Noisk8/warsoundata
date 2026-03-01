@@ -375,4 +375,108 @@
       opacity: 1;
     }
   }
+
+  /* --- ENERGY BEAM PATHS --- */
+  .energy-beam {
+    stroke-dasharray: 10, 25;
+    animation: flowDash 1s linear infinite;
+  }
+
+  .usa-beam {
+    stroke: #0088ff;
+    filter: drop-shadow(0 0 5px #0088ff);
+  }
+
+  .irn-beam {
+    stroke: #ff2200;
+    filter: drop-shadow(0 0 5px #ff2200);
+  }
+
+  @keyframes flowDash {
+    to {
+      stroke-dashoffset: -35;
+    }
+  }
+
+  /* --- SHOCKWAVE IMPACTS --- */
+  .shockwave-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .shockwave-core {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+    animation: coreFade 3s forwards;
+  }
+
+  .shockwave-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    border: 2px solid currentColor;
+  }
+
+  .ring-1 {
+    width: 60px;
+    height: 60px;
+    animation: ripple 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  }
+
+  .ring-2 {
+    width: 40px;
+    height: 40px;
+    animation: ripple 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) 0.2s forwards;
+  }
+
+  .target-usa {
+    color: #0088ff;
+  }
+
+  .target-irn {
+    color: #ff2200;
+  }
+
+  @keyframes ripple {
+    0% {
+      transform: translate(-50%, -50%) scale(0.1);
+      opacity: 1;
+      border-width: 4px;
+    }
+
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0;
+      border-width: 0px;
+    }
+  }
+
+  @keyframes coreFade {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    10% {
+      opacity: 1;
+      transform: scale(2);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+  }
+
 }

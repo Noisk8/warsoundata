@@ -113,13 +113,12 @@ export class Globe implements AfterViewInit, OnDestroy {
 
     const originMarker = L.marker(origin, { icon: originIcon }).addTo(this.attackLayer);
 
-    // Draw line
+    // Draw line (Laser Beam)
     const line = L.polyline([origin, dest], {
       color: color,
       weight: 2,
       opacity: 0.8,
-      dashArray: '5, 10',
-      className: 'attack-line'
+      className: `energy-beam ${attacker.toLowerCase()}-beam`
     }).addTo(this.attackLayer);
 
     // Simulate animation using intervals
@@ -152,17 +151,28 @@ export class Globe implements AfterViewInit, OnDestroy {
       if (progress >= steps) {
         clearInterval(animInterval);
 
-        // Impact
+        // Impact (Shockwave)
         this.audio.playImpact(payload);
 
-        // Impact marker
-        const impact = L.circleMarker(dest, {
-          radius: 10 + (intensity * 20),
-          color: color,
-          fillColor: color,
-          fillOpacity: 0.5,
-          className: 'impact-pulse'
-        }).addTo(this.attackLayer);
+        // Calculate a scale offset based on intensity (size of shockwave)
+        const scale = 1 + (intensity * 2);
+
+        const impactHtml = `
+          <div class="shockwave-container" style="transform: scale(${scale});">
+            <div class="shockwave-ring ring-1 target-${attacker.toLowerCase()}"></div>
+            <div class="shockwave-ring ring-2 target-${attacker.toLowerCase()}"></div>
+            <div class="shockwave-core target-${attacker.toLowerCase()}"></div>
+          </div>
+        `;
+
+        const impactIcon = L.divIcon({
+          className: 'custom-div-icon',
+          html: impactHtml,
+          iconSize: [60, 60],
+          iconAnchor: [30, 30] // Center the 60x60 shockwave over the coordinate
+        });
+
+        const impact = L.marker(dest, { icon: impactIcon }).addTo(this.attackLayer);
 
         // Cleanup
         this.attackLayer.removeLayer(particle);
