@@ -1,0 +1,42 @@
+<div #container class="globe-container"></div>
+
+@if (!started) {
+<div class="overlay glass">
+    <div class="hud">
+        <h1>TACTICAL RADAR INIT</h1>
+        <p>AWAITING AUTHORIZATION...</p>
+        <button class="cyber-btn" (click)="startSystem()">[ INITIALIZE ]</button>
+    </div>
+</div>
+}
+
+@if (started) {
+<div class="glass-panel terminal-panel">
+    <div class="terminal-header">
+        <span class="blinking-cursor">_</span>
+        <h3>SYS.LOG // LIVE_INCIDENTS</h3>
+    </div>
+    <ul>
+        @for (log of eventLogs; track $index) {
+        <li [class.usa]="log.attacker === 'USA'" [class.irn]="log.attacker === 'IRN'">
+            <div class="log-header">
+                <span class="time">[{{ log.time | date:'HH:mm:ss' }}]</span>
+                <strong>{{ log.attacker === 'USA' ? 'UNITED STATES' : 'IRAN ISLAMIC REP.' }}</strong>
+            </div>
+            <div class="log-detail">
+                <div class="grid-2">
+                    <div><span class="label">TYPE:</span> {{ log.type }}</div>
+                    <div><span class="label">SOURCE:</span> {{ log.source }}</div>
+                </div>
+                <div class="route">
+                    <span class="label">ROUTE:</span>
+                    [ {{ log.source === 'USA' ? log.target : 'UNKNOWN_ORIGIN' }} ]
+                    <span class="arrow">---►</span>
+                    [ {{ log.target }} ]
+                </div>
+            </div>
+        </li>
+        }
+    </ul>
+</div>
+}
