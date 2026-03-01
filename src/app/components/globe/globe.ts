@@ -17,7 +17,7 @@ export class Globe implements AfterViewInit, OnDestroy {
 
   public started = false;
   private sub?: Subscription;
-  public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string, sourceUrl: string }[] = [];
+  public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string, sourceUrl: string, emoji: string }[] = [];
 
   private map!: L.Map;
   private attackLayer!: L.LayerGroup;
@@ -35,7 +35,7 @@ export class Globe implements AfterViewInit, OnDestroy {
 
       this.sub = this.data.events$.subscribe(event => {
         this.simulateAttack(event);
-        this.audio.playLaunch(event.attacker, event.intensity);
+        this.audio.playLaunch(event.attacker, event.intensity, event.velocity, event.payload, event.type);
 
         this.eventLogs = [{
           time: new Date(),
@@ -43,7 +43,8 @@ export class Globe implements AfterViewInit, OnDestroy {
           type: event.type,
           target: event.target,
           source: event.source,
-          sourceUrl: event.sourceUrl
+          sourceUrl: event.sourceUrl,
+          emoji: event.emoji
         }, ...this.eventLogs];
 
         if (this.eventLogs.length > 50) this.eventLogs.pop();
@@ -87,7 +88,7 @@ export class Globe implements AfterViewInit, OnDestroy {
   public simulateAttack(event: any): void {
     if (!this.map) return;
 
-    const { attacker, intensity, type, target, originCoords: origin, targetCoords: dest, velocity, payload } = event;
+    const { attacker, intensity, type, target, originCoords: origin, targetCoords: dest, velocity, payload, emoji } = event;
     const color = attacker === 'USA' ? '#0088ff' : '#ff2200';
 
     // Create custom Tactical DivIcon for Origin
@@ -97,7 +98,7 @@ export class Globe implements AfterViewInit, OnDestroy {
         <div class="marker-core"></div>
         <div class="bracket">]</div>
         <div class="tactical-data origin-data">
-          <div><span class="lbl">OP:</span> ${attacker}</div>
+          <div><span class="lbl">OP:</span> ${attacker} ${emoji}</div>
           <div><span class="lbl">GEO:</span> ${origin[0].toFixed(2)}, ${origin[1].toFixed(2)}</div>
         </div>
       </div>
@@ -152,7 +153,7 @@ export class Globe implements AfterViewInit, OnDestroy {
         clearInterval(animInterval);
 
         // Impact
-        this.audio.playImpact();
+        this.audio.playImpact(payload);
 
         // Impact marker
         const impact = L.circleMarker(dest, {

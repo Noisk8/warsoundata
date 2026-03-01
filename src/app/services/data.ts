@@ -12,6 +12,7 @@ export interface AttackEvent {
   targetCoords: [number, number];
   velocity: number;
   payload: number;
+  emoji: string;
 }
 
 @Injectable({
@@ -57,6 +58,16 @@ export class Data {
 
     const type = this.attackTypes[Math.floor(Math.random() * this.attackTypes.length)];
     const source = this.sources[Math.floor(Math.random() * this.sources.length)];
+
+    // Map Emojis to Types
+    const emojiMap: { [key: string]: string } = {
+      'BALLISTIC MISSILE': '🚀',
+      'DRONE SWARM': '🛸',
+      'CRUISE MISSILE': '🛩️',
+      'CYBER ATTACK': '💻',
+      'ARTILLERY': '☄️'
+    };
+    const emoji = emojiMap[type] || '⚠️';
 
     let originCoords: [number, number];
     let t;
@@ -116,7 +127,8 @@ export class Data {
       originCoords,
       targetCoords: t.coords,
       velocity,
-      payload
+      payload,
+      emoji
     });
   }
 

@@ -69,29 +69,54 @@ export class Audio {
     this.isInitialized = true;
   }
 
-  playLaunch(attacker: 'USA' | 'IRN', intensity: number) {
+  playLaunch(attacker: 'USA' | 'IRN', intensity: number, velocity: number, payload: number, type: string) {
     if (!this.isInitialized) return;
 
-    if (attacker === 'USA') {
-      // 808 Kick
-      this.kick808.triggerAttackRelease("C1", "8n");
-    } else {
-      // 808 Snare snappy hit
-      this.snare808.triggerAttackRelease("16n");
+    // Pitch bends up for fast weapons, down for slow ones
+    const velocityPitchOffset = (velocity - 5) * 2;
+
+    if (type === 'CYBER ATTACK') {
+      // Cyber attacks sound like rapid glitchy bursts
+      this.snare808.triggerAttackRelease("32n");
+      setTimeout(() => this.snare808.triggerAttackRelease("64n"), 50);
+      setTimeout(() => this.snare808.triggerAttackRelease("32n"), 100);
+    }
+    else if (type === 'DRONE SWARM') {
+      // High-pitched rapid sequence for drones
+      this.hihat808.triggerAttackRelease("C6", "16n");
+      setTimeout(() => this.hihat808.triggerAttackRelease("C5", "16n"), 100);
+      setTimeout(() => this.hihat808.triggerAttackRelease("E6", "16n"), 200);
+    }
+    else {
+      // Heavy Ballistics
+      if (attacker === 'USA') {
+        const pitch = Tone.Frequency("C1").transpose(velocityPitchOffset).toNote();
+        this.kick808.triggerAttackRelease(pitch, "8n");
+      } else {
+        this.snare808.triggerAttackRelease("16n");
+      }
     }
 
-    // Slightly modulate the drone frequency based on intensity to add tension
+    // Drone tension scales with Payload and Intensity combined
+    const threatLevel = intensity + (payload / 2200);
     const baseFreq = 65;
-    this.droneOsc.frequency.rampTo(baseFreq + (intensity * 10), 0.5);
+    this.droneOsc.frequency.rampTo(baseFreq + (threatLevel * 15), 0.5);
     setTimeout(() => {
-      if (this.isInitialized) this.droneOsc.frequency.rampTo(baseFreq, 2);
-    }, 1000);
+      if (this.isInitialized) this.droneOsc.frequency.rampTo(baseFreq, 3);
+    }, 1500);
   }
 
-  playImpact() {
+  playImpact(payload: number) {
     if (!this.isInitialized) return;
 
-    // Trigger metallic crash for impact
-    this.hihat808.triggerAttackRelease("C4", "32n");
+    // Heavy payloads get much longer reverb decay (up to 8s) and more volume
+    const payloadFactor = payload / 2200; // 0.0 to 1.0 approx
+
+    this.reverb.decay = 2 + (payloadFactor * 6);
+    this.hihat808.volume.value = -10 + (payloadFactor * 5); // From -10dB to -5dB
+
+    // Trigger metallic crash for impact (lower pitch for heavier payload)
+    const impactPitch = Tone.Frequency("C4").transpose(-(payloadFactor * 12)).toNote();
+    this.hihat808.triggerAttackRelease(impactPitch, "32n");
   }
 }
