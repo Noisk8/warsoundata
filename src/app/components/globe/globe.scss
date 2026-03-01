@@ -261,3 +261,117 @@
     font-size: 0.7rem;
   }
 }
+
+/* --- TACTICAL MAP OVERLAYS --- */
+$hud-font: 'Courier New', Courier, monospace;
+
+.custom-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.tactical-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  font-family: $hud-font;
+  font-weight: bold;
+}
+
+.tactical-marker .bracket {
+  animation: pulse 1s infinite alternate;
+}
+
+.tactical-marker .marker-core {
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  margin: 0 2px;
+  box-shadow: 0 0 5px currentColor;
+}
+
+.tactical-marker.usa {
+  color: #0088ff;
+}
+
+.tactical-marker.irn {
+  color: #ff2200;
+}
+
+.tactical-particle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+}
+
+.tactical-particle .particle-core {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #fff;
+}
+
+.tactical-data {
+  position: absolute;
+  top: -10px;
+  left: 25px;
+  background: rgba(0, 0, 0, 0.7);
+  border-left: 1px solid currentColor;
+  padding: 2px 5px;
+  font-family: $hud-font;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  animation: typeIn 0.3s steps(10, end);
+}
+
+.tactical-data .lbl {
+  opacity: 0.6;
+}
+
+.origin-data {
+  color: currentColor;
+  /* Inherits from .usa / .irn */
+}
+
+.flying-data {
+  top: 10px;
+  left: 10px;
+  color: #00ffcc;
+  border-left-color: #00ffcc;
+}
+
+@keyframes typeIn {
+  from {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  to {
+    width: 100%;
+    opacity: 1;
+    overflow: visible;
+  }
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}

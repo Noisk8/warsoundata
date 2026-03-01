@@ -10,6 +10,8 @@ export interface AttackEvent {
   sourceUrl: string;
   originCoords: [number, number];
   targetCoords: [number, number];
+  velocity: number;
+  payload: number;
 }
 
 @Injectable({
@@ -100,6 +102,10 @@ export class Data {
         break;
     }
 
+    // Generate tactical metadata
+    const velocity = parseFloat((1.5 + (Math.random() * 8.0)).toFixed(1)); // MACH 1.5 to 9.5
+    const payload = Math.floor(200 + (Math.random() * 2000)); // 200kg to 2200kg
+
     this.eventsSubject.next({
       attacker,
       intensity,
@@ -108,7 +114,9 @@ export class Data {
       source,
       sourceUrl,
       originCoords,
-      targetCoords: t.coords
+      targetCoords: t.coords,
+      velocity,
+      payload
     });
   }
 

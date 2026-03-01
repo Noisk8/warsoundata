@@ -34,7 +34,7 @@ export class Globe implements AfterViewInit, OnDestroy {
       this.data.startSimulation();
 
       this.sub = this.data.events$.subscribe(event => {
-        this.simulateAttack(event.attacker, event.intensity, event.type, event.target, event.originCoords, event.targetCoords);
+        this.simulateAttack(event);
         this.audio.playLaunch(event.attacker, event.intensity);
 
         this.eventLogs = [{
@@ -84,18 +84,33 @@ export class Globe implements AfterViewInit, OnDestroy {
     this.attackLayer = L.layerGroup().addTo(this.map);
   }
 
-  public simulateAttack(attacker: 'USA' | 'IRN', intensity: number, type: string, target: string, origin: [number, number], dest: [number, number]): void {
+  public simulateAttack(event: any): void {
     if (!this.map) return;
 
+    const { attacker, intensity, type, target, originCoords: origin, targetCoords: dest, velocity, payload } = event;
     const color = attacker === 'USA' ? '#0088ff' : '#ff2200';
 
-    // Draw origin marker
-    const originMarker = L.circleMarker(origin, {
-      radius: 4,
-      color: color,
-      fillColor: color,
-      fillOpacity: 1
-    }).addTo(this.attackLayer);
+    // Create custom Tactical DivIcon for Origin
+    const originHtml = `
+      <div class="tactical-marker ${attacker.toLowerCase()}">
+        <div class="bracket">[</div>
+        <div class="marker-core"></div>
+        <div class="bracket">]</div>
+        <div class="tactical-data origin-data">
+          <div><span class="lbl">OP:</span> ${attacker}</div>
+          <div><span class="lbl">GEO:</span> ${origin[0].toFixed(2)}, ${origin[1].toFixed(2)}</div>
+        </div>
+      </div>
+    `;
+
+    const originIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: originHtml,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
+    const originMarker = L.marker(origin, { icon: originIcon }).addTo(this.attackLayer);
 
     // Draw line
     const line = L.polyline([origin, dest], {
@@ -111,13 +126,25 @@ export class Globe implements AfterViewInit, OnDestroy {
     const steps = 30;
     const interval = 50; // ms
 
-    // Create traveling particle
-    const particle = L.circleMarker(origin, {
-      radius: 3,
-      color: '#fff',
-      fillColor: '#fff',
-      fillOpacity: 1
-    }).addTo(this.attackLayer);
+    // Custom Tactical DivIcon for the travelling particle (Missile/Drone)
+    const particleHtml = `
+      <div class="tactical-particle ${attacker.toLowerCase()}">
+        <div class="particle-core"></div>
+        <div class="tactical-data flying-data">
+          <div><span class="lbl">VEL:</span> M${velocity}</div>
+          <div><span class="lbl">PLD:</span> ${payload}KG</div>
+        </div>
+      </div>
+    `;
+
+    const particleIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: particleHtml,
+      iconSize: [10, 10],
+      iconAnchor: [5, 5]
+    });
+
+    const particle = L.marker(origin, { icon: particleIcon }).addTo(this.attackLayer);
 
     const animInterval = setInterval(() => {
       progress++;
