@@ -26,7 +26,8 @@
             <div class="log-detail">
                 <div class="grid-2">
                     <div><span class="label">TYPE:</span> {{ log.type }}</div>
-                    <div><span class="label">SOURCE:</span> {{ log.source }}</div>
+                    <div><span class="label">SOURCE:</span> <a [href]="log.sourceUrl" target="_blank"
+                            class="cyber-link">{{ log.source }}</a></div>
                 </div>
                 <div class="route">
                     <span class="label">ROUTE:</span>

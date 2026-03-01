@@ -17,7 +17,7 @@ export class Globe implements AfterViewInit, OnDestroy {
 
   public started = false;
   private sub?: Subscription;
-  public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string }[] = [];
+  public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string, sourceUrl: string }[] = [];
 
   private map!: L.Map;
   private attackLayer!: L.LayerGroup;
@@ -42,7 +42,8 @@ export class Globe implements AfterViewInit, OnDestroy {
           attacker: event.attacker,
           type: event.type,
           target: event.target,
-          source: event.source
+          source: event.source,
+          sourceUrl: event.sourceUrl
         }, ...this.eventLogs];
 
         if (this.eventLogs.length > 50) this.eventLogs.pop();

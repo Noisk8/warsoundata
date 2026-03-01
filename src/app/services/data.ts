@@ -7,6 +7,7 @@ export interface AttackEvent {
   type: string;
   target: string;
   source: string;
+  sourceUrl: string;
   originCoords: [number, number];
   targetCoords: [number, number];
 }
@@ -55,6 +56,18 @@ export class Data {
     const type = this.attackTypes[Math.floor(Math.random() * this.attackTypes.length)];
     const source = this.sources[Math.floor(Math.random() * this.sources.length)];
 
+    // Map sources to dummy URLs for realism
+    const urlMap: { [key: string]: string } = {
+      'Defense Feed': 'https://www.defense.gov/News/',
+      'NewsAPI': 'https://newsapi.org/',
+      'Twitter API': 'https://x.com/search?q=missile+strike',
+      'Satellite Intel': 'https://www.maxar.com/',
+      'Ground Units': 'https://www.aljazeera.com/',
+      'SIPRI DB': 'https://www.sipri.org/databases',
+      'GDELT': 'https://www.gdeltproject.org/'
+    };
+    const sourceUrl = urlMap[source] || 'https://example.com';
+
     let originCoords: [number, number];
     let t;
 
@@ -74,6 +87,7 @@ export class Data {
       type,
       target: t.name,
       source,
+      sourceUrl,
       originCoords,
       targetCoords: t.coords
     });
