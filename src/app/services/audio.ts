@@ -116,34 +116,35 @@ export class Audio {
 
     // Pitch bends up for fast weapons, down for slow ones
     const velocityPitchOffset = (velocity - 5) * 2;
+    const now = Tone.now();
 
     if (type === 'CYBER ATTACK') {
       // Cyber attacks sound like rapid glitchy bursts (Hi-hats and Claves)
-      this.snare808.triggerAttackRelease("32n");
-      this.clave808.triggerAttackRelease("C6", "32n");
-      setTimeout(() => this.snare808.triggerAttackRelease("64n"), 50);
-      setTimeout(() => this.clave808.triggerAttackRelease("E6", "64n"), 100);
+      this.snare808.triggerAttackRelease("32n", now);
+      this.clave808.triggerAttackRelease("C6", "32n", now);
+      this.snare808.triggerAttackRelease("64n", now + 0.05);
+      this.clave808.triggerAttackRelease("E6", "64n", now + 0.1);
     }
     else if (type === 'DRONE SWARM') {
       // Swarms are represented by rhythmic Cowbells and high hats
-      this.cowbell808.triggerAttackRelease("C5", "32n");
-      setTimeout(() => this.hihat808.triggerAttackRelease("C5", "16n"), 100);
-      setTimeout(() => this.cowbell808.triggerAttackRelease("G4", "32n"), 200);
+      this.cowbell808.triggerAttackRelease("C5", "32n", now);
+      this.hihat808.triggerAttackRelease("C5", "16n", now + 0.1);
+      this.cowbell808.triggerAttackRelease("G4", "32n", now + 0.2);
     }
     else if (type === 'ARTILLERY') {
       // Artillery uses the Congas/Toms
-      this.conga808.triggerAttackRelease("G2", "8n");
-      setTimeout(() => this.conga808.triggerAttackRelease("E2", "8n"), 150);
-      setTimeout(() => this.conga808.triggerAttackRelease("C2", "8n"), 300);
+      this.conga808.triggerAttackRelease("G2", "8n", now);
+      this.conga808.triggerAttackRelease("E2", "8n", now + 0.15);
+      this.conga808.triggerAttackRelease("C2", "8n", now + 0.3);
     }
     else {
       // Heavy Ballistics / Cruise Missiles
       if (attacker === 'USA') {
         const pitch = Tone.Frequency("C1").transpose(velocityPitchOffset).toNote();
-        this.kick808.triggerAttackRelease(pitch, "8n");
+        this.kick808.triggerAttackRelease(pitch, "8n", now);
       } else {
-        this.kick808.triggerAttackRelease("G1", "8n");
-        this.snare808.triggerAttackRelease("16n", "+0.1");
+        this.kick808.triggerAttackRelease("G1", "8n", now);
+        this.snare808.triggerAttackRelease("16n", now + 0.1);
       }
     }
 
@@ -159,6 +160,8 @@ export class Audio {
   playImpact(payload: number) {
     if (!this.isInitialized) return;
 
+    const now = Tone.now();
+
     // Heavy payloads get much longer reverb decay (up to 8s) and more volume
     const payloadFactor = payload / 2200; // 0.0 to 1.0 approx
 
@@ -168,12 +171,12 @@ export class Audio {
 
     // Trigger metallic crash for impact (lower pitch for heavier payload)
     const impactPitch = Tone.Frequency("C4").transpose(-(payloadFactor * 12)).toNote();
-    this.hihat808.triggerAttackRelease(impactPitch, "32n");
+    this.hihat808.triggerAttackRelease(impactPitch, "32n", now);
 
     // If it's a huge payload, trigger the 808 Crash cymbal
     if (payload > 1000) {
-      this.crash808.triggerAttackRelease("C4", "8n");
-      this.kick808.triggerAttackRelease("C0", "2n"); // Huge sub-bass explosion
+      this.crash808.triggerAttackRelease("C4", "8n", now);
+      this.kick808.triggerAttackRelease("C0", "2n", now); // Huge sub-bass explosion
     }
   }
 }
