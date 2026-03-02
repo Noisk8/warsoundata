@@ -241,6 +241,29 @@
       text-shadow: 0 0 5px #00ffcc;
     }
   }
+
+  .audio-monitor {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+
+    .monitor-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .monitor-bar-fill {
+      height: 100%;
+      background: #00ffcc;
+      box-shadow: 0 0 5px #00ffcc;
+      transition: width 0.1s ease;
+    }
+  }
 }
 
 .cost-title {

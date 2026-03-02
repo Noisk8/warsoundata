@@ -21,6 +21,7 @@ export class Globe implements AfterViewInit, OnDestroy {
   public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string, sourceUrl: string, emoji: string }[] = [];
   public currentCost: number = 0;
   public showDataSources: boolean = false;
+  public audioLevel: number = 0; // 0 to 100 for visual bar
 
   private map!: L.Map;
   private attackLayer!: L.LayerGroup;
@@ -65,7 +66,21 @@ export class Globe implements AfterViewInit, OnDestroy {
         this.currentCost = cost;
         this.cdr.detectChanges();
       });
+
+      this.startAudioMonitor();
     }, 100);
+  }
+
+  private startAudioMonitor() {
+    const update = () => {
+      if (!this.started) return;
+      const db = this.audio.getSignalLevel();
+      // Convert db (-100 to 0) to 0-100 scale for UI
+      this.audioLevel = Math.max(0, Math.min(100, (db + 80) * 1.25));
+      this.cdr.detectChanges();
+      requestAnimationFrame(update);
+    };
+    update();
   }
 
   ngAfterViewInit(): void {

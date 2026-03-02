@@ -20,6 +20,7 @@ export class Audio {
   private droneOsc!: Tone.FMSynth;
   private reverb!: Tone.Reverb;
   private delay!: Tone.FeedbackDelay;
+  private meter!: Tone.Meter;
 
   async initialize() {
     if (this.isInitialized) return;
@@ -38,6 +39,10 @@ export class Audio {
 
       // Explicitly set master volume to a safe level (0dB)
       Tone.getDestination().volume.value = 0;
+
+      // Setup Meter for visual verification
+      this.meter = new Tone.Meter();
+      Tone.getDestination().connect(this.meter);
 
       // Setup FX Chain - Simplified for stability
       // Using JCReverb/Freeverb instead of the heavy Reverb class for now
@@ -216,5 +221,11 @@ export class Audio {
     } catch (e) {
       console.error('[AUDIO] Error in playImpact:', e);
     }
+  }
+
+  getSignalLevel(): number {
+    if (!this.isInitialized || !this.meter) return -100;
+    const val = this.meter.getValue();
+    return Array.isArray(val) ? val[0] : val;
   }
 }
