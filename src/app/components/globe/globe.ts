@@ -34,10 +34,13 @@ export class Globe implements AfterViewInit, OnDestroy {
   async startSystem() {
     this.started = true;
 
+    // MUST initialize Tone.js directly in the click event hierarchy before any timeouts
+    // otherwise Chrome's strict Autoplay policy will block the AudioContext creation.
+    await this.audio.initialize();
+
     // We need a tiny timeout to allow Angular to render the container div before Leaflet tries to attach to it
-    setTimeout(async () => {
+    setTimeout(() => {
       this.initMap();
-      await this.audio.initialize();
       this.data.startSimulation();
 
       this.sub = this.data.events$.subscribe(event => {
