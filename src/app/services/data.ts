@@ -24,6 +24,8 @@ export class Data {
   private intervalId: any;
   private costIntervalId: any;
   private currentCost = 0;
+  private anchorDateMs: number = 0;
+  private accumulatedWeaponCost: number = 0;
 
   private attackTypes = ['BALLISTIC MISSILE', 'DRONE SWARM', 'CRUISE MISSILE', 'CYBER ATTACK', 'ARTILLERY'];
 
@@ -52,20 +54,35 @@ export class Data {
   startSimulation() {
     if (this.intervalId) return;
 
-    // Calculate baseline cost since yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const secondsSinceYesterday = (new Date().getTime() - yesterday.getTime()) / 1000;
+    // Load or initialize Anchor Date
+    const storedAnchor = localStorage.getItem('warCostAnchorDate');
+    if (storedAnchor) {
+      this.anchorDateMs = parseInt(storedAnchor, 10);
+    } else {
+      // Initialize to exactly 24 hours ago
+      this.anchorDateMs = Date.now() - (24 * 60 * 60 * 1000);
+      localStorage.setItem('warCostAnchorDate', this.anchorDateMs.toString());
+    }
 
-    // Assume $5,000 per second in passive military deployment costs globally
-    this.currentCost = secondsSinceYesterday * 5000;
-    this.costSubject.next(this.currentCost);
+    // Load or initialize Accumulated Weapon Cost
+    const storedAccumulated = localStorage.getItem('warCostAccumulated');
+    if (storedAccumulated) {
+      this.accumulatedWeaponCost = parseInt(storedAccumulated, 10);
+    } else {
+      this.accumulatedWeaponCost = 0;
+      localStorage.setItem('warCostAccumulated', '0');
+    }
+
+    const updateCost = () => {
+      const secondsSinceAnchor = (Date.now() - this.anchorDateMs) / 1000;
+      this.currentCost = (secondsSinceAnchor * 5000) + this.accumulatedWeaponCost;
+      this.costSubject.next(this.currentCost);
+    };
+
+    updateCost();
 
     // Fast interval for visual ticking of passive costs
-    this.costIntervalId = setInterval(() => {
-      this.currentCost += (5000 / 10); // add 1/10th of per-second cost every 100ms
-      this.costSubject.next(this.currentCost);
-    }, 100);
+    this.costIntervalId = setInterval(updateCost, 100);
 
     this.emitEvent(); // Emit immediately upon start
 
@@ -147,7 +164,9 @@ export class Data {
       'CYBER ATTACK': 120000,
       'ARTILLERY': 50000
     };
-    this.currentCost += weaponCosts[type] || 100000;
+
+    this.accumulatedWeaponCost += weaponCosts[type] || 100000;
+    localStorage.setItem('warCostAccumulated', this.accumulatedWeaponCost.toString());
 
     this.eventsSubject.next({
       attacker,
