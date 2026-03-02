@@ -24,159 +24,197 @@ export class Audio {
   async initialize() {
     if (this.isInitialized) return;
 
-    await Tone.start();
+    console.warn('[AUDIO] Initializing Tone.js engine...');
 
-    // Setup FX Chain
-    this.reverb = new Tone.Reverb({ decay: 4, preDelay: 0.1, wet: 0.4 }).toDestination();
-    this.delay = new Tone.FeedbackDelay("8n", 0.5).connect(this.reverb);
+    try {
+      await Tone.start();
+      console.warn('[AUDIO] Tone.js Context started:', Tone.context.state);
 
-    // --- AMBIENT DRONE ---
-    this.droneOsc = new Tone.FMSynth({
-      harmonicity: 0.5,
-      modulationIndex: 2,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 2, decay: 0, sustain: 1, release: 2 },
-      modulation: { type: 'triangle' },
-      volume: -20
-    }).connect(this.reverb);
+      // Force resume to be sure
+      if (Tone.context.state !== 'running') {
+        console.warn('[AUDIO] Attempting force resume...');
+        await Tone.context.resume();
+      }
 
-    // Start continuous dark drone on 65Hz (C2)
-    this.droneOsc.triggerAttack("C2");
+      // Explicitly set master volume to a safe level (0dB)
+      Tone.getDestination().volume.value = 0;
 
-    // --- TR-808 KICK (USA Launches) ---
-    this.kick808 = new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 4,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 1 },
-      volume: 5
-    }).toDestination();
+      // Setup FX Chain - Simplified for stability
+      // Using JCReverb/Freeverb instead of the heavy Reverb class for now
+      this.reverb = new Tone.Reverb({ decay: 1.5, wet: 0.3 }).toDestination();
+      // We still await if possible, but let's try not to block everything if it fails
+      try {
+        await this.reverb.ready;
+        console.warn('[AUDIO] Reverb buffer generated.');
+      } catch (e) {
+        console.error('[AUDIO] Reverb failed to initialize, continuing without it.', e);
+      }
 
-    // --- TR-808 SNARE (IRN Launches) ---
-    // Snare is usually a mix of a tonal hit and noise. We'll use NoiseSynth for the snappy part.
-    this.snare808 = new Tone.NoiseSynth({
-      noise: { type: 'white' },
-      envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.2 },
-      volume: 2
-    }).toDestination();
+      this.delay = new Tone.FeedbackDelay("8n", 0.4).connect(this.reverb);
 
-    // --- TR-808 HI-HAT ---
-    this.hihat808 = new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5,
-      volume: -10
-    }).connect(this.delay);
+      // --- AMBIENT DRONE ---
+      this.droneOsc = new Tone.FMSynth({
+        harmonicity: 0.5,
+        modulationIndex: 2,
+        oscillator: { type: 'sine' },
+        envelope: { attack: 2, decay: 0, sustain: 1, release: 2 },
+        modulation: { type: 'triangle' },
+        volume: -25
+      }).connect(this.reverb);
 
-    // --- TR-808 COWBELL ---
-    this.cowbell808 = new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.4, release: 0.1 },
-      harmonicity: 1.2,
-      modulationIndex: 20,
-      resonance: 800,
-      octaves: 0.5,
-      volume: -8
-    }).toDestination();
-    this.cowbell808.frequency.value = 400;
+      // Start continuous dark drone
+      this.droneOsc.triggerAttack("C2");
+      console.warn('[AUDIO] Drone started.');
 
-    // --- TR-808 CONGA/TOM ---
-    this.conga808 = new Tone.MembraneSynth({
-      pitchDecay: 0.1,
-      octaves: 2,
-      oscillator: { type: 'triangle' },
-      envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 },
-      volume: 0
-    }).toDestination();
+      // --- TR-808 KICK ---
+      this.kick808 = new Tone.MembraneSynth({
+        pitchDecay: 0.05, octaves: 4, oscillator: { type: 'sine' },
+        envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 1 },
+        volume: 2
+      }).toDestination();
 
-    // --- TR-808 CLAVE ---
-    this.clave808 = new Tone.Synth({
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 },
-      volume: -5
-    }).toDestination();
+      // --- TR-808 SNARE ---
+      this.snare808 = new Tone.NoiseSynth({
+        noise: { type: 'white' },
+        envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 },
+        volume: -5
+      }).toDestination();
 
-    // --- TR-808 CRASH CYMBAL ---
-    this.crash808 = new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 2, release: 1 },
-      harmonicity: 5.1,
-      modulationIndex: 64,
-      resonance: 4000,
-      octaves: 2.5,
-      volume: -15
-    }).connect(this.reverb);
-    this.crash808.frequency.value = 200;
+      // --- TR-808 HI-HAT ---
+      this.hihat808 = new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
+        harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5,
+        volume: -15
+      }).connect(this.delay);
 
-    this.isInitialized = true;
+      // --- TR-808 COWBELL ---
+      this.cowbell808 = new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay: 0.3, release: 0.1 },
+        harmonicity: 1.2, modulationIndex: 20, resonance: 800, octaves: 0.5,
+        volume: -12
+      }).toDestination();
+      this.cowbell808.frequency.value = 400;
+
+      // --- TR-808 CONGA/TOM ---
+      this.conga808 = new Tone.MembraneSynth({
+        pitchDecay: 0.1, octaves: 2, oscillator: { type: 'triangle' },
+        envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 },
+        volume: -5
+      }).toDestination();
+
+      // --- TR-808 CLAVE ---
+      this.clave808 = new Tone.Synth({
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.01 },
+        volume: -10
+      }).toDestination();
+
+      // --- TR-808 CRASH ---
+      this.crash808 = new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay: 1.5, release: 1 },
+        harmonicity: 5.1, modulationIndex: 64, resonance: 4000, octaves: 2.5,
+        volume: -18
+      }).connect(this.reverb);
+      this.crash808.frequency.value = 200;
+
+      // TEST BEEP to verify audio path
+      const osc = new Tone.Oscillator(440, "sine").toDestination();
+      osc.start().stop("+0.1");
+      console.warn('[AUDIO] Sent test beep.');
+
+      this.isInitialized = true;
+      console.warn('[AUDIO] Engine fully ready.');
+    } catch (error) {
+      console.error('[AUDIO] Critical initialization failure:', error);
+    }
   }
 
   playLaunch(attacker: 'USA' | 'IRN', intensity: number, velocity: number, payload: number, type: string) {
     if (!this.isInitialized) return;
 
-    // Pitch bends up for fast weapons, down for slow ones
-    const velocityPitchOffset = (velocity - 5) * 2;
-    const now = Tone.now();
+    // Sanitize inputs to prevent NaN
+    const sIntensity = Number(intensity) || 0;
+    const sVelocity = Number(velocity) || 5;
+    const sPayload = Number(payload) || 0;
 
-    if (type === 'CYBER ATTACK') {
-      // Cyber attacks sound like rapid glitchy bursts (Hi-hats and Claves)
-      this.snare808.triggerAttackRelease("32n", now);
-      this.clave808.triggerAttackRelease("C6", "32n", now);
-      this.snare808.triggerAttackRelease("64n", now + 0.05);
-      this.clave808.triggerAttackRelease("E6", "64n", now + 0.1);
-    }
-    else if (type === 'DRONE SWARM') {
-      // Swarms are represented by rhythmic Cowbells and high hats
-      this.cowbell808.triggerAttackRelease("C5", "32n", now);
-      this.hihat808.triggerAttackRelease("C5", "16n", now + 0.1);
-      this.cowbell808.triggerAttackRelease("G4", "32n", now + 0.2);
-    }
-    else if (type === 'ARTILLERY') {
-      // Artillery uses the Congas/Toms
-      this.conga808.triggerAttackRelease("G2", "8n", now);
-      this.conga808.triggerAttackRelease("E2", "8n", now + 0.15);
-      this.conga808.triggerAttackRelease("C2", "8n", now + 0.3);
-    }
-    else {
-      // Heavy Ballistics / Cruise Missiles
-      if (attacker === 'USA') {
-        const pitch = Tone.Frequency("C1").transpose(velocityPitchOffset).toNote();
-        this.kick808.triggerAttackRelease(pitch, "8n", now);
-      } else {
-        this.kick808.triggerAttackRelease("G1", "8n", now);
-        this.snare808.triggerAttackRelease("16n", now + 0.1);
+    const velocityPitchOffset = (sVelocity - 5) * 2;
+    const now = Tone.now() + 0.1; // Add 100ms lookahead
+
+    try {
+      if (type === 'CYBER ATTACK') {
+        this.snare808.triggerAttackRelease("32n", now);
+        this.clave808.triggerAttackRelease("C6", "32n", now);
+        this.snare808.triggerAttackRelease("64n", now + 0.05);
+        this.clave808.triggerAttackRelease("E6", "64n", now + 0.1);
       }
-    }
+      else if (type === 'DRONE SWARM') {
+        const freqC5 = Tone.Frequency("C5").toFrequency() as number;
+        const freqG4 = Tone.Frequency("G4").toFrequency() as number;
 
-    // Drone tension scales with Payload and Intensity combined
-    const threatLevel = intensity + (payload / 2200);
-    const baseFreq = 65;
-    this.droneOsc.frequency.rampTo(baseFreq + (threatLevel * 15), 0.5);
-    setTimeout(() => {
-      if (this.isInitialized) this.droneOsc.frequency.rampTo(baseFreq, 3);
-    }, 1500);
+        this.cowbell808.frequency.setValueAtTime(freqC5, now);
+        this.cowbell808.triggerAttackRelease("32n", now);
+
+        this.hihat808.frequency.setValueAtTime(freqC5, now + 0.1);
+        this.hihat808.triggerAttackRelease("16n", now + 0.1);
+
+        this.cowbell808.frequency.setValueAtTime(freqG4, now + 0.2);
+        this.cowbell808.triggerAttackRelease("32n", now + 0.2);
+      }
+      else if (type === 'ARTILLERY') {
+        this.conga808.triggerAttackRelease("G2", "8n", now);
+        this.conga808.triggerAttackRelease("E2", "8n", now + 0.15);
+        this.conga808.triggerAttackRelease("C2", "8n", now + 0.3);
+      }
+      else {
+        if (attacker === 'USA') {
+          const pitch = Tone.Frequency("C1").transpose(velocityPitchOffset).toNote();
+          this.kick808.triggerAttackRelease(pitch, "8n", now);
+        } else {
+          this.kick808.triggerAttackRelease("G1", "8n", now);
+          this.snare808.triggerAttackRelease("16n", now + 0.1);
+        }
+      }
+
+      // Drone tension
+      const threatLevel = sIntensity + (sPayload / 2200);
+      const baseFreq = 65;
+      this.droneOsc.frequency.rampTo(baseFreq + (threatLevel * 15), 0.5);
+
+      setTimeout(() => {
+        if (this.isInitialized) {
+          this.droneOsc.frequency.rampTo(baseFreq, 3);
+        }
+      }, 1500);
+    } catch (e) {
+      console.error('[AUDIO] Error in playLaunch:', e);
+    }
   }
 
   playImpact(payload: number) {
     if (!this.isInitialized) return;
 
-    const now = Tone.now();
+    // Sanitize input
+    const sPayload = Number(payload) || 0;
+    const now = Tone.now() + 0.1;
+    const payloadFactor = Math.min(Math.max(sPayload / 2200, 0), 1);
 
-    // Heavy payloads get much longer reverb decay (up to 8s) and more volume
-    const payloadFactor = payload / 2200; // 0.0 to 1.0 approx
+    try {
+      this.reverb.decay = Number(2 + (payloadFactor * 4)) || 2;
+      this.hihat808.volume.rampTo(-15 + (payloadFactor * 5), 0.1);
+      this.crash808.volume.rampTo(-20 + (payloadFactor * 10), 0.1);
 
-    this.reverb.decay = 2 + (payloadFactor * 6);
-    this.hihat808.volume.value = -10 + (payloadFactor * 5);
-    this.crash808.volume.value = -15 + (payloadFactor * 10);
+      const impactFreq = Tone.Frequency("C4").transpose(-(payloadFactor * 12)).toFrequency() as number;
+      this.hihat808.frequency.setValueAtTime(impactFreq, now);
+      this.hihat808.triggerAttackRelease("32n", now);
 
-    // Trigger metallic crash for impact (lower pitch for heavier payload)
-    const impactPitch = Tone.Frequency("C4").transpose(-(payloadFactor * 12)).toNote();
-    this.hihat808.triggerAttackRelease(impactPitch, "32n", now);
-
-    // If it's a huge payload, trigger the 808 Crash cymbal
-    if (payload > 1000) {
-      this.crash808.triggerAttackRelease("C4", "8n", now);
-      this.kick808.triggerAttackRelease("C0", "2n", now); // Huge sub-bass explosion
+      if (sPayload > 1000) {
+        const crashFreq = Tone.Frequency("C3").toFrequency() as number;
+        this.crash808.frequency.setValueAtTime(crashFreq, now);
+        this.crash808.triggerAttackRelease("8n", now);
+        this.kick808.triggerAttackRelease("C0", "2n", now);
+      }
+    } catch (e) {
+      console.error('[AUDIO] Error in playImpact:', e);
     }
   }
 }
