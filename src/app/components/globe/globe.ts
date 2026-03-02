@@ -1,6 +1,5 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import * as L from 'leaflet';
 import { Audio } from '../../services/audio';
 import { Data } from '../../services/data';
@@ -9,7 +8,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-globe',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './globe.html',
   styleUrl: './globe.scss',
 })
@@ -21,11 +20,16 @@ export class Globe implements AfterViewInit, OnDestroy {
   private costSub?: Subscription;
   public eventLogs: { time: Date, attacker: string, type: string, target: string, source: string, sourceUrl: string, emoji: string }[] = [];
   public currentCost: number = 0;
+  public showDataSources: boolean = false;
 
   private map!: L.Map;
   private attackLayer!: L.LayerGroup;
 
   constructor(private audio: Audio, private data: Data, private cdr: ChangeDetectorRef) { }
+
+  toggleDataSources() {
+    this.showDataSources = !this.showDataSources;
+  }
 
   async startSystem() {
     this.started = true;
