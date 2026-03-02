@@ -167,7 +167,7 @@ export class Data {
     };
 
     this.accumulatedWeaponCost += weaponCosts[type] || 100000;
-    localStorage.setItem('warCostAccumulated', this.accumulatedWeaponCost.toString());
+    localStorage.setItem('soundata_war_accumulated', this.accumulatedWeaponCost.toString());
 
     this.eventsSubject.next({
       attacker,

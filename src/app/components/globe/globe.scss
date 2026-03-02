@@ -227,6 +227,8 @@
   text-align: left;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   font-family: 'Courier New', Courier, monospace;
+  width: min(560px, calc(100vw - 20px - 400px - 20px - 20px));
+  max-width: min(560px, calc(100vw - 20px - 400px - 20px - 20px));
 
   .about-link {
     display: inline-block;
@@ -383,6 +385,13 @@
 
   .hud h1 {
     font-size: 1.5rem;
+  }
+
+  .cost-tracker-panel {
+    max-width: none;
+    width: calc(100vw - 40px);
+    left: 20px;
+    right: 20px;
   }
 
   .terminal-panel {
