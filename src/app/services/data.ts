@@ -20,7 +20,7 @@ export interface AttackEvent {
 })
 export class Data {
   private eventsSubject = new Subject<AttackEvent>();
-  private costSubject = new BehaviorSubject<number>(0);
+  private costSubject: BehaviorSubject<number>;
   private intervalId: any;
   private costIntervalId: any;
   private currentCost = 0;
@@ -43,6 +43,26 @@ export class Data {
 
   private sources = ['NewsAPI', 'GDELT', 'Twitter API', 'SIPRI DB', 'Defense Feed'];
 
+  constructor() {
+    // 1. Load or initialize Anchor Date
+    const storedAnchor = localStorage.getItem('soundata_war_anchor');
+    if (storedAnchor) {
+      this.anchorDateMs = parseInt(storedAnchor, 10);
+    } else {
+      this.anchorDateMs = Date.now() - (24 * 60 * 60 * 1000);
+      localStorage.setItem('soundata_war_anchor', this.anchorDateMs.toString());
+    }
+
+    // 2. Load or initialize Accumulated Weapon Cost
+    const storedAccumulated = localStorage.getItem('soundata_war_accumulated');
+    this.accumulatedWeaponCost = storedAccumulated ? parseInt(storedAccumulated, 10) : 0;
+
+    // 3. Initialize Subject with current calculation
+    const initialSeconds = (Date.now() - this.anchorDateMs) / 1000;
+    this.currentCost = (initialSeconds * 5000) + this.accumulatedWeaponCost;
+    this.costSubject = new BehaviorSubject<number>(this.currentCost);
+  }
+
   get events$(): Observable<AttackEvent> {
     return this.eventsSubject.asObservable();
   }
@@ -53,25 +73,6 @@ export class Data {
 
   startSimulation() {
     if (this.intervalId) return;
-
-    // Load or initialize Anchor Date
-    const storedAnchor = localStorage.getItem('warCostAnchorDate');
-    if (storedAnchor) {
-      this.anchorDateMs = parseInt(storedAnchor, 10);
-    } else {
-      // Initialize to exactly 24 hours ago
-      this.anchorDateMs = Date.now() - (24 * 60 * 60 * 1000);
-      localStorage.setItem('warCostAnchorDate', this.anchorDateMs.toString());
-    }
-
-    // Load or initialize Accumulated Weapon Cost
-    const storedAccumulated = localStorage.getItem('warCostAccumulated');
-    if (storedAccumulated) {
-      this.accumulatedWeaponCost = parseInt(storedAccumulated, 10);
-    } else {
-      this.accumulatedWeaponCost = 0;
-      localStorage.setItem('warCostAccumulated', '0');
-    }
 
     const updateCost = () => {
       const secondsSinceAnchor = (Date.now() - this.anchorDateMs) / 1000;

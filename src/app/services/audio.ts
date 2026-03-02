@@ -21,6 +21,7 @@ export class Audio {
   private reverb!: Tone.Reverb;
   private delay!: Tone.FeedbackDelay;
   private meter!: Tone.Meter;
+  private masterGain!: Tone.Gain;
 
   async initialize() {
     if (this.isInitialized) return;
@@ -37,12 +38,15 @@ export class Audio {
         await Tone.context.resume();
       }
 
-      // Explicitly set master volume to a safe level (0dB)
+      // Explicitly set master volume and gain
       Tone.getDestination().volume.value = 0;
+      Tone.getDestination().mute = false;
+
+      this.masterGain = new Tone.Gain(1.5).toDestination(); // 50% boost
 
       // Setup Meter for visual verification
       this.meter = new Tone.Meter();
-      Tone.getDestination().connect(this.meter);
+      this.masterGain.connect(this.meter);
 
       // Setup FX Chain - Simplified for stability
       // Using JCReverb/Freeverb instead of the heavy Reverb class for now
@@ -75,56 +79,56 @@ export class Audio {
       this.kick808 = new Tone.MembraneSynth({
         pitchDecay: 0.05, octaves: 4, oscillator: { type: 'sine' },
         envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 1 },
-        volume: 2
-      }).toDestination();
+        volume: 6
+      }).connect(this.masterGain);
 
       // --- TR-808 SNARE ---
       this.snare808 = new Tone.NoiseSynth({
         noise: { type: 'white' },
         envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 },
-        volume: -5
-      }).toDestination();
+        volume: 0
+      }).connect(this.masterGain);
 
       // --- TR-808 HI-HAT ---
       this.hihat808 = new Tone.MetalSynth({
         envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
         harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5,
-        volume: -15
+        volume: -5
       }).connect(this.delay);
 
       // --- TR-808 COWBELL ---
       this.cowbell808 = new Tone.MetalSynth({
         envelope: { attack: 0.001, decay: 0.3, release: 0.1 },
         harmonicity: 1.2, modulationIndex: 20, resonance: 800, octaves: 0.5,
-        volume: -12
-      }).toDestination();
+        volume: -2
+      }).connect(this.masterGain);
       this.cowbell808.frequency.value = 400;
 
       // --- TR-808 CONGA/TOM ---
       this.conga808 = new Tone.MembraneSynth({
         pitchDecay: 0.1, octaves: 2, oscillator: { type: 'triangle' },
         envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 },
-        volume: -5
-      }).toDestination();
+        volume: 0
+      }).connect(this.masterGain);
 
       // --- TR-808 CLAVE ---
       this.clave808 = new Tone.Synth({
         oscillator: { type: 'sine' },
         envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.01 },
-        volume: -10
-      }).toDestination();
+        volume: -5
+      }).connect(this.masterGain);
 
       // --- TR-808 CRASH ---
       this.crash808 = new Tone.MetalSynth({
         envelope: { attack: 0.001, decay: 1.5, release: 1 },
         harmonicity: 5.1, modulationIndex: 64, resonance: 4000, octaves: 2.5,
-        volume: -18
+        volume: -10
       }).connect(this.reverb);
       this.crash808.frequency.value = 200;
 
-      // TEST BEEP to verify audio path
-      const osc = new Tone.Oscillator(440, "sine").toDestination();
-      osc.start().stop("+0.1");
+      // TEST BEEP
+      const osc = new Tone.Oscillator(440, "sine").connect(this.masterGain);
+      osc.start().stop("+0.2");
       console.warn('[AUDIO] Sent test beep.');
 
       this.isInitialized = true;
