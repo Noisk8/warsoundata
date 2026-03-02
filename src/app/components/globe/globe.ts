@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
-import { Audio } from '../../services/audio';
+import { AudioService } from '../../services/audio';
 import { Data } from '../../services/data';
 import { Subscription } from 'rxjs';
 
@@ -26,7 +26,11 @@ export class Globe implements AfterViewInit, OnDestroy {
   private map!: L.Map;
   private attackLayer!: L.LayerGroup;
 
-  constructor(private audio: Audio, private data: Data, private cdr: ChangeDetectorRef) { }
+  constructor(private audio: AudioService, private data: Data, private cdr: ChangeDetectorRef) { }
+
+  forceAudioTest() {
+    this.audio.forceSignalTest();
+  }
 
   toggleDataSources() {
     this.showDataSources = !this.showDataSources;

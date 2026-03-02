@@ -24,6 +24,7 @@
         <div class="monitor-bar-bg">
             <div class="monitor-bar-fill" [style.width.%]="audioLevel"></div>
         </div>
+        <button (click)="forceAudioTest()" class="cyber-btn-mini">[ FORCE TEST ]</button>
     </div>
 
     @if (showDataSources) {

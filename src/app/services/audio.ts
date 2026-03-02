@@ -4,7 +4,7 @@ import * as Tone from 'tone';
 @Injectable({
   providedIn: 'root',
 })
-export class Audio {
+export class AudioService {
   private isInitialized = false;
 
   // TR-808 Instruments
@@ -231,5 +231,15 @@ export class Audio {
     if (!this.isInitialized || !this.meter) return -100;
     const val = this.meter.getValue();
     return Array.isArray(val) ? val[0] : val;
+  }
+
+  forceSignalTest() {
+    if (!this.isInitialized) return;
+    const now = Tone.now();
+    console.warn('[AUDIO] FORCING SIGNAL TEST...');
+    this.kick808.triggerAttackRelease("C1", "4n", now);
+    this.cowbell808.triggerAttackRelease("4n", now + 0.1);
+    this.hihat808.triggerAttackRelease("4n", now + 0.2);
+    this.snare808.triggerAttackRelease("4n", now + 0.3);
   }
 }

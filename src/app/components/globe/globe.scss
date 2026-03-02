@@ -263,6 +263,23 @@
       box-shadow: 0 0 5px #00ffcc;
       transition: width 0.1s ease;
     }
+
+    .cyber-btn-mini {
+      background: rgba(0, 255, 204, 0.1);
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+      font-size: 0.5rem;
+      padding: 2px 5px;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-family: inherit;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #00ffcc;
+        color: #000;
+      }
+    }
   }
 }
 
