@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import * as L from 'leaflet';
 import { Audio } from '../../services/audio';
 import { Data } from '../../services/data';
@@ -8,7 +9,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-globe',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './globe.html',
   styleUrl: './globe.scss',
 })
